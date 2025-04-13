@@ -54,19 +54,25 @@
     }
   </style>
 </head>
+  
 <body>
   <div class="container">
     <div id="left-panel">
       <h2>☕ Coffee Map</h2>
-      <button onclick="loadWebMap('909ccff2f308451ca3d47aa968928a3b')">店铺位置地图</button>
-      <button onclick="loadWebMap('7a7a761019c744af8fe5a4315c3a1da2')">Google Trends 地图</button>
+      <button onclick="loadWebMap('909ccff2f308451ca3d47aa968928a3b',[103.8, 1.35], 13)">Coffee Shop location in SG</button>
+      <button onclick="loadWebMap('7a7a761019c744af8fe5a4315c3a1da2', [0, 20], 2)">Google Trends Map</button>
+      <div id="trend-controls">
+        <button onclick="showBrandTrends('StarbucksTrends')">Starbucks</button>
+        <button onclick="showBrandTrends('TimsTrends')">Tim Hortons</button>
+        <button onclick="showBrandTrends('LuckinTrends')">Luckin Coffee</button>
+      </div>
+
     </div>
     <div id="map"></div>
     <div id="right-panel">
-      <div class="chart-title">📊 门店数量 Top 5</div>
-      <canvas id="barChart" height="180"></canvas>
-      <div class="chart-title">🌍 品牌全球占比</div>
-      <canvas id="pieChart" height="200"></canvas>
+<div class="chart-title">🔥 Global Search Trends</div>
+<canvas id="pieChart" height="200"></canvas>
+
     </div>
   </div>
 
@@ -77,27 +83,167 @@
   <script src="https://js.arcgis.com/4.28/"></script>
 
   <!-- ✅ 执行脚本：等页面完全加载后运行 -->
+
+  
   <script>
     let view;
 
-    function loadWebMap(mapId) {
-      require(["esri/WebMap", "esri/views/MapView"], (WebMap, MapView) => {
-        if (view) {
-          view.container = null;
-          view.destroy();
-        }
-        const webmap = new WebMap({
-          portalItem: { id: mapId }
-        });
-
-        view = new MapView({
-          container: "map",
-          map: webmap,
-          center: [0, 20],
-          zoom: 2
-        });
-      });
+// 加载地图    
+function loadWebMap(mapId, center = [0, 20], zoom = 2) {
+  require(["esri/WebMap", "esri/views/MapView"], (WebMap, MapView) => {
+    if (view) {
+      view.container = null;
+      view.destroy();
     }
+
+    const webmap = new WebMap({
+      portalItem: { id: mapId }
+    });
+
+    view = new MapView({
+      container: "map",
+      map: webmap,
+      center: center,
+      zoom: zoom
+    });
+    enablePopupToSidebar(view);
+  });
+}
+    
+//加载popup window
+    function enablePopupToSidebar(view) {
+  const brandLinks = {
+    "Starbucks": "https://www.starbucks.com/menu?_branch_match_id=1439859153515999594&utm_source=Web&utm_campaign=Pickup&utm_medium=marketing&_branch_referrer=H4sIAAAAAAAAA8soKSkottLXLy5JLEoqTc4u1kssKNDLyczL1g93LCkoD88J8zOxrytKTUstKsrMS49PKsovL04tsnXOKMrPTQUA%2BN1wVz8AAAA%3D",
+    "Tiong Bahru Bakery": "https://www.tiongbahrubakery.com/takeaway-pre-order/",
+    "Foreword Coffee": "https://forewordcoffee.com/?srsltid=AfmBOorymOOr41y--XQIlHwbjoFZOS1jeKXChmkzDfPFUsIYfpurqXZA",
+    "Tim Hortons": "https://deliveroo.com.sg/menu/singapore/jurong-east-boon-lay-way/tim-hortons-jem?utm_source=google&utm_medium=cpc&utm_term=tim%20hortons%20delivery&utm_campaign=%2A%2A%5EAcquisition%5ESearch%5ERestaurant%5ESingapore%5EAll%20Cities%5ESGBJ%5EBroad%5EAPI%5EBukit%20Batok%20%26%20Jurong%20East%5E~1293~%5E%5EIndependents%5EEN%5ELifecycle%5E%C2%A322207624036&utm_loc=9062542&utm_device=c&utm_adposition=&utm_network=g&utm_targetid=kwd-319354228291&gclsrc=aw.ds&gad_source=1&gclid=CjwKCAjwwe2_BhBEEiwAM1I7sTGTTtzURCwIYCHPlCLL_YA4G38SYHIeKo-6W2OtYSNAz9fZ0kzK_BoCAlcQAvD_BwE",
+    "Luckin Coffee": "https://www.luckincoffee.com/app/download",
+    "Coffee Bean": "https://www.coffeebean.com/",
+    "Ya Kun Kaya Toast": "https://app.yakun.com/cherish-app",
+    "Ralph‘s Coffee": "https://www.ralphlauren.com.sg/content-features/brand-navigation-categories/ralphs-coffee/ralphs-coffee?srsltid=AfmBOoqXhN49BoAqBdwsQfUiRWYbQQmRRpCeweFwFbXICvN0SLIopQ8V"
+  };
+
+  view.popup.autoOpenEnabled = false;
+
+  view.on("click", function(event) {
+    view.hitTest(event).then(function(response) {
+      const result = response.results.find((res) =>
+        res.graphic.layer.title === "Chain_CoffeeShop" ||
+        res.graphic.layer.title === "independent_coffee_by_region"
+      );
+
+      if (result) {
+        const attr = result.graphic.attributes;
+        const brand = attr.Brand;
+        const shopType = result.graphic.layer.title === "Chain_CoffeeShop"
+          ? "Chain Coffee Shop"
+          : "Independent Coffee Shop";
+        const link = brandLinks[brand];
+
+        // 创建内容 HTML
+        let html = `
+          <div style="font-size: 15px; padding: 10px; line-height: 1.6;">
+            <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">☕ ${shopType}</div>
+            <strong>Name:</strong> ${attr.Name}<br>
+            <strong>Address:</strong> ${attr.Address}<br>
+            <strong>Rating:</strong> ${attr.Rating} ⭐<br><br>
+        `;
+
+        if (link) {
+          const isApp = link.includes("app") || link.includes("download");
+          const label = isApp ? "Download App to Order" : "Order Online";
+
+          html += `
+            <a href="${link}" target="_blank">
+              <button style="
+                background-color: #8a2be2;
+                border: none;
+                color: white;
+                padding: 8px 16px;
+                border-radius: 6px;
+                font-size: 14px;
+                cursor: pointer;
+              ">${label}</button>
+            </a>
+          `;
+        }
+
+        html += `</div>`;
+
+        // 插入右侧面板
+        document.getElementById("right-panel").innerHTML = html;
+      }
+    });
+  });
+}
+
+    
+    //加载扇形图函数
+    function showBrandTrends(layerTitle) {
+  // 控制图层显隐
+  view.map.layers.forEach((layer) => {
+    if (["StarbucksTrends", "TimsTrends", "LuckinTrends"].includes(layer.title)) {
+      layer.visible = (layer.title === layerTitle);
+    }
+  });
+
+  // 提取该图层所有 features
+  const targetLayer = view.map.layers.find(l => l.title === layerTitle);
+
+  if (targetLayer) {
+    const query = targetLayer.createQuery();
+    query.outFields = ["country", "trends"];
+    query.where = "1=1";
+    query.returnGeometry = false;
+
+    targetLayer.queryFeatures(query).then((result) => {
+      const features = result.features;
+
+      // 汇总数据：以国家为 label，trends 为 value
+      const labels = [];
+      const data = [];
+
+      features.forEach((f) => {
+        const country = f.attributes.country;
+        const trend = f.attributes.trends;
+        if (trend > 0) {
+          labels.push(country);
+          data.push(trend);
+        }
+      });
+
+      // 清除旧图表（如果已存在）
+      if (window.pieChart) {
+        window.pieChart.destroy();
+      }
+
+      // 绘制新的 Pie Chart
+      const ctx = document.getElementById("pieChart").getContext("2d");
+      window.pieChart = new Chart(ctx, {
+        type: "pie",
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: labels.map((_, i) => `hsl(${i * 20 % 360}, 70%, 60%)`)
+          }]
+        },
+        options: {
+          plugins: {
+            legend: { labels: { color: "white" } },
+            title: {
+              display: true,
+              text: `${layerTitle.replace("Trends", "")} Global Search Share`,
+              color: "#8a2be2",
+              font: { size: 16 }
+            }
+          }
+        }
+      });
+    });
+  }
+}
+
 
     // 保证页面 DOM 加载完再执行图表创建
     window.addEventListener("DOMContentLoaded", function () {
