@@ -1,81 +1,111 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Global Coffee Map</title>
-  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-  <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css" />
+  <title>Global Coffee Brand Map</title>
+  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/dark/main.css" />
   <script src="https://js.arcgis.com/4.28/"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    html, body, #viewDiv {
-      padding: 0;
+    html, body {
       margin: 0;
+      padding: 0;
       height: 100%;
+      font-family: "Segoe UI", sans-serif;
+    }
+    .container {
+      display: flex;
+      height: 100%;
+      background-color: #1e1e1e;
+    }
+    #left-panel {
+      width: 240px;
+      background: #2c2c2c;
+      padding: 16px;
+      color: #fff;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+    }
+    #mapViewDiv {
+      flex: 1;
+    }
+    #right-panel {
+      width: 400px;
+      background: #2c2c2c;
+      padding: 16px;
+      color: #fff;
+      box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+    }
+    .section-title {
+      font-size: 16px;
+      margin: 12px 0 8px;
+      border-bottom: 1px solid #555;
+      padding-bottom: 4px;
+    }
+    canvas {
+      background: #1e1e1e;
+      border-radius: 8px;
+    }
+    select, button {
       width: 100%;
-    }
-    #buttons {
-      position: absolute;
-      top: 15px;
-      left: 15px;
-      z-index: 10;
-    }
-    .map-btn {
-      padding: 8px 12px;
-      margin-right: 6px;
-      background: white;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-    }
-    .map-btn:hover {
-      background-color: #f0f0f0;
+      padding: 6px;
+      margin-bottom: 10px;
+      background: #444;
+      border: none;
+      color: #fff;
+      border-radius: 4px;
     }
   </style>
 </head>
 <body>
-  <div id="viewDiv"></div>
-  <div id="buttons">
-    <button class="map-btn" id="btn-map1">🌍 全球门店分布</button>
-    <button class="map-btn" id="btn-map2">🔥 热度地图</button>
-    <button class="map-btn" id="btn-sg">📍 新加坡视角</button>
+  <div class="container">
+    <!-- Left Panel -->
+    <div id="left-panel">
+      <h2 style="font-size: 18px; margin-top: 0;">☕ Coffee Map Panel</h2>
+      <div class="section-title">Brand</div>
+      <select id="brandSelect">
+        <option value="all">All</option>
+        <option value="Starbucks">Starbucks</option>
+        <option value="Luckin">Luckin</option>
+        <option value="TimHortons">Tim Hortons</option>
+        <option value="Costa">Costa</option>
+      </select>
+
+      <div class="section-title">Actions</div>
+      <button id="btn-global">🌍 Show Global</button>
+      <button id="btn-sg">📍 Focus Singapore</button>
+    </div>
+
+    <!-- Map -->
+    <div id="mapViewDiv"></div>
+
+    <!-- Right Panel -->
+    <div id="right-panel">
+      <div class="section-title">Brand Distribution</div>
+      <canvas id="pieChart" height="200"></canvas>
+    </div>
   </div>
 
   <script>
-    require(["esri/views/MapView", "esri/WebMap"], function(MapView, WebMap) {
-      let view; // view 是全局变量，方便操作
-      let map1 = new WebMap({ portalItem: { id: "909ccff2f308451ca3d47aa968928a3b" } });
-      let map2 = new WebMap({ portalItem: { id: "7a7a761019c744af8fe5a4315c3a1da2" } });
+    require(["esri/WebMap", "esri/views/MapView"], function(WebMap, MapView) {
+      const map1 = new WebMap({ portalItem: { id: "909ccff2f308451ca3d47aa968928a3b" }});
 
-      // 初始化视图（默认加载 map1）
-      view = new MapView({
-        container: "viewDiv",
+      const view = new MapView({
+        container: "mapViewDiv",
         map: map1,
         center: [0, 30],
-        zoom: 2
+        zoom: 2,
+        padding: { right: 400, left: 240 }
       });
 
-      // 切换到 map1
-      document.getElementById("btn-map1").addEventListener("click", () => {
-        view.map = map1;
-        view.goTo({ center: [0, 30], zoom: 2 });
-      });
-
-      // 切换到 map2
-      document.getElementById("btn-map2").addEventListener("click", () => {
-        view.map = map2;
-        view.goTo({ center: [0, 30], zoom: 2 });
-      });
-
-      // 切换视角到新加坡
       document.getElementById("btn-sg").addEventListener("click", () => {
-        view.map = map1; // 确保当前是 map1
-        view.goTo({
-          center: [103.8198, 1.3521],
-          zoom: 11
-        });
+        view.goTo({ center: [103.8198, 1.3521], zoom: 11 });
       });
+      document.getElementById("btn-global").addEventListener("click", () => {
+        view.goTo({ center: [0, 30], zoom: 2 });
+      });
+
+      // 可扩展 popup 与图表联动逻辑...
     });
   </script>
 </body>
