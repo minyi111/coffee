@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Global Coffee Map</title>
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css" />
+  <script src="https://js.arcgis.com/4.28/"></script>
+  <style>
+    html, body, #viewDiv {
+      padding: 0;
+      margin: 0;
+      height: 100%;
+      width: 100%;
+    }
+    #buttons {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      z-index: 10;
+    }
+    .map-btn {
+      padding: 8px 12px;
+      margin-right: 6px;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+    }
+    .map-btn:hover {
+      background-color: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <div id="viewDiv"></div>
+  <div id="buttons">
+    <button class="map-btn" id="btn-map1">🌍 全球门店分布</button>
+    <button class="map-btn" id="btn-map2">🔥 热度地图</button>
+    <button class="map-btn" id="btn-sg">📍 新加坡视角</button>
+  </div>
+
+  <script>
+    require(["esri/views/MapView", "esri/WebMap"], function(MapView, WebMap) {
+      let view; // view 是全局变量，方便操作
+      let map1 = new WebMap({ portalItem: { id: "7f67f7671f6248b6886dd7ce6b1972b5" } });
+      let map2 = new WebMap({ portalItem: { id: "7a7a761019c744af8fe5a4315c3a1da2" } });
+
+      // 初始化视图（默认加载 map1）
+      view = new MapView({
+        container: "viewDiv",
+        map: map1,
+        center: [0, 30],
+        zoom: 2
+      });
+
+      // 切换到 map1
+      document.getElementById("btn-map1").addEventListener("click", () => {
+        view.map = map1;
+        view.goTo({ center: [0, 30], zoom: 2 });
+      });
+
+      // 切换到 map2
+      document.getElementById("btn-map2").addEventListener("click", () => {
+        view.map = map2;
+        view.goTo({ center: [0, 30], zoom: 2 });
+      });
+
+      // 切换视角到新加坡
+      document.getElementById("btn-sg").addEventListener("click", () => {
+        view.map = map1; // 确保当前是 map1
+        view.goTo({
+          center: [103.8198, 1.3521],
+          zoom: 11
+        });
+      });
+    });
+  </script>
+</body>
+</html>
