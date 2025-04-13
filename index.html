@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Global Coffee Brand Map</title>
-  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
-  <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/dark/main.css" />
+  <meta charset="UTF-8">
+  <title>Global Coffee Insight Map</title>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/dark/main.css">
   <script src="https://js.arcgis.com/4.28/"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -13,100 +12,176 @@
       padding: 0;
       height: 100%;
       font-family: "Segoe UI", sans-serif;
+      background-color: #1f1f1f;
+      color: white;
     }
     .container {
       display: flex;
       height: 100%;
-      background-color: #1e1e1e;
     }
+
     #left-panel {
-      width: 240px;
-      background: #2c2c2c;
+      width: 250px;
+      background: #2a2a2a;
       padding: 16px;
-      color: #fff;
-      box-shadow: 2px 0 5px rgba(0,0,0,0.2);
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
     }
-    #mapViewDiv {
+
+    #left-panel h2 {
+      font-size: 18px;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+
+    #map {
       flex: 1;
+      height: 100%;
+      position: relative;
     }
+
     #right-panel {
-      width: 400px;
-      background: #2c2c2c;
+      width: 360px;
+      background: #2a2a2a;
       padding: 16px;
-      color: #fff;
-      box-shadow: -2px 0 5px rgba(0,0,0,0.2);
+      overflow-y: auto;
     }
-    .section-title {
-      font-size: 16px;
-      margin: 12px 0 8px;
-      border-bottom: 1px solid #555;
-      padding-bottom: 4px;
-    }
+
     canvas {
-      background: #1e1e1e;
-      border-radius: 8px;
+      margin-top: 16px;
+      background-color: #1f1f1f;
     }
+
     select, button {
       width: 100%;
-      padding: 6px;
-      margin-bottom: 10px;
-      background: #444;
+      margin-bottom: 12px;
+      padding: 8px;
+      font-size: 14px;
       border: none;
-      color: #fff;
       border-radius: 4px;
+      background: #444;
+      color: white;
+    }
+
+    #map-switch {
+      margin-top: 20px;
+    }
+
+    .chart-title {
+      font-size: 16px;
+      color: #8a2be2;
+      margin-top: 10px;
+      margin-bottom: 4px;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Left Panel -->
+    <!-- 左侧面板 -->
     <div id="left-panel">
-      <h2 style="font-size: 18px; margin-top: 0;">☕ Coffee Map Panel</h2>
-      <div class="section-title">Brand</div>
-      <select id="brandSelect">
-        <option value="all">All</option>
-        <option value="Starbucks">Starbucks</option>
-        <option value="Luckin">Luckin</option>
-        <option value="TimHortons">Tim Hortons</option>
-        <option value="Costa">Costa</option>
+      <h2>☕ Coffee Map Panel</h2>
+      <select id="coffeeType">
+        <option>All</option>
+        <option>Starbucks</option>
+        <option>Luckin</option>
+        <option>Tim Hortons</option>
       </select>
-
-      <div class="section-title">Actions</div>
-      <button id="btn-global">🌍 Show Global</button>
-      <button id="btn-sg">📍 Focus Singapore</button>
+      <select id="yearSelect">
+        <option>All</option>
+        <option>2022</option>
+        <option>2023</option>
+      </select>
+      <label for="yearSlider">Year Slider</label>
+      <input type="range" id="yearSlider" min="2010" max="2023" value="2022">
+      <div id="map-switch">
+        <button onclick="loadWebMap('909ccff2f308451ca3d47aa968928a3b')">店铺位置地图</button>
+        <button onclick="loadWebMap('7a7a761019c744af8fe5a4315c3a1da2')">Google Trends 地图</button>
+      </div>
     </div>
 
-    <!-- Map -->
-    <div id="mapViewDiv"></div>
+    <!-- 中间地图区域 -->
+    <div id="map"></div>
 
-    <!-- Right Panel -->
+    <!-- 右侧图表区域 -->
     <div id="right-panel">
-      <div class="section-title">Brand Distribution</div>
-      <canvas id="pieChart" height="200"></canvas>
+      <div>
+        <div class="chart-title">📊 门店数量 Top 5</div>
+        <canvas id="barChart" height="160"></canvas>
+
+        <div class="chart-title">🌍 品牌全球占比</div>
+        <canvas id="pieChart" height="200"></canvas>
+      </div>
     </div>
   </div>
 
   <script>
-    require(["esri/WebMap", "esri/views/MapView"], function(WebMap, MapView) {
-      const map1 = new WebMap({ portalItem: { id: "909ccff2f308451ca3d47aa968928a3b" }});
+    let view;
 
-      const view = new MapView({
-        container: "mapViewDiv",
-        map: map1,
-        center: [0, 30],
-        zoom: 2,
-        padding: { right: 400, left: 240 }
+    function loadWebMap(mapId) {
+      require(["esri/WebMap", "esri/views/MapView"], (WebMap, MapView) => {
+        if (view) {
+          view.container = null;
+          view.destroy();
+        }
+
+        const webmap = new WebMap({
+          portalItem: { id: mapId }
+        });
+
+        view = new MapView({
+          container: "map",
+          map: webmap,
+          center: [103.8, 1.35], // 默认新加坡
+          zoom: 2
+        });
+      });
+    }
+
+    // 默认加载第一个地图
+    window.onload = function () {
+      loadWebMap("909ccff2f308451ca3d47aa968928a3b");
+      loadCharts();
+    };
+
+    // 示例图表数据（可以换成真实门店数量数据）
+    function loadCharts() {
+      new Chart(document.getElementById("barChart"), {
+        type: "bar",
+        data: {
+          labels: ["Starbucks", "Luckin", "Tim Hortons", "Costa", "McCafe"],
+          datasets: [{
+            label: "门店数量",
+            backgroundColor: "#8a2be2",
+            data: [32000, 11000, 8000, 5000, 3000]
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { ticks: { color: "white" } },
+            y: { ticks: { color: "white" } }
+          }
+        }
       });
 
-      document.getElementById("btn-sg").addEventListener("click", () => {
-        view.goTo({ center: [103.8198, 1.3521], zoom: 11 });
+      new Chart(document.getElementById("pieChart"), {
+        type: "pie",
+        data: {
+          labels: ["Starbucks", "Luckin", "Tim Hortons", "Costa", "McCafe"],
+          datasets: [{
+            label: "市场占比",
+            data: [55, 20, 15, 5, 5],
+            backgroundColor: [
+              "#8a2be2", "#5cacee", "#ffa07a", "#20b2aa", "#ffcc00"
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { labels: { color: "white" } } }
+        }
       });
-      document.getElementById("btn-global").addEventListener("click", () => {
-        view.goTo({ center: [0, 30], zoom: 2 });
-      });
-
-      // 可扩展 popup 与图表联动逻辑...
-    });
+    }
   </script>
 </body>
 </html>
