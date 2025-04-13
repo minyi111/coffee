@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Global Coffee Insight Map</title>
-  <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/dark/main.css">
-  <script src="https://js.arcgis.com/4.28/"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/dark/main.css" />
   <style>
     html, body {
       margin: 0;
@@ -19,38 +17,25 @@
       display: flex;
       height: 100%;
     }
-
     #left-panel {
       width: 250px;
       background: #2a2a2a;
       padding: 16px;
-      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
     }
-
-    #left-panel h2 {
-      font-size: 18px;
-      color: #fff;
-      margin-bottom: 12px;
-    }
-
     #map {
       flex: 1;
       height: 100%;
-      position: relative;
     }
-
     #right-panel {
       width: 360px;
       background: #2a2a2a;
       padding: 16px;
       overflow-y: auto;
     }
-
     canvas {
       margin-top: 16px;
       background-color: #1f1f1f;
     }
-
     select, button {
       width: 100%;
       margin-bottom: 12px;
@@ -61,11 +46,6 @@
       background: #444;
       color: white;
     }
-
-    #map-switch {
-      margin-top: 20px;
-    }
-
     .chart-title {
       font-size: 16px;
       color: #8a2be2;
@@ -76,43 +56,27 @@
 </head>
 <body>
   <div class="container">
-    <!-- 左侧面板 -->
     <div id="left-panel">
-      <h2>☕ Coffee Map Panel</h2>
-      <select id="coffeeType">
-        <option>All</option>
-        <option>Starbucks</option>
-        <option>Luckin</option>
-        <option>Tim Hortons</option>
-      </select>
-      <select id="yearSelect">
-        <option>All</option>
-        <option>2022</option>
-        <option>2023</option>
-      </select>
-      <label for="yearSlider">Year Slider</label>
-      <input type="range" id="yearSlider" min="2010" max="2023" value="2022">
-      <div id="map-switch">
-        <button onclick="loadWebMap('909ccff2f308451ca3d47aa968928a3b')">店铺位置地图</button>
-        <button onclick="loadWebMap('7a7a761019c744af8fe5a4315c3a1da2')">Google Trends 地图</button>
-      </div>
+      <h2>☕ Coffee Map</h2>
+      <button onclick="loadWebMap('909ccff2f308451ca3d47aa968928a3b')">店铺位置地图</button>
+      <button onclick="loadWebMap('7a7a761019c744af8fe5a4315c3a1da2')">Google Trends 地图</button>
     </div>
-
-    <!-- 中间地图区域 -->
     <div id="map"></div>
-
-    <!-- 右侧图表区域 -->
     <div id="right-panel">
-      <div>
-        <div class="chart-title">📊 门店数量 Top 5</div>
-        <canvas id="barChart" height="160"></canvas>
-
-        <div class="chart-title">🌍 品牌全球占比</div>
-        <canvas id="pieChart" height="200"></canvas>
-      </div>
+      <div class="chart-title">📊 门店数量 Top 5</div>
+      <canvas id="barChart" height="180"></canvas>
+      <div class="chart-title">🌍 品牌全球占比</div>
+      <canvas id="pieChart" height="200"></canvas>
     </div>
   </div>
 
+  <!-- ✅ 加载 Chart.js（UMD版本） -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+  <!-- ✅ 加载 ArcGIS JS API -->
+  <script src="https://js.arcgis.com/4.28/"></script>
+
+  <!-- ✅ 执行脚本：等页面完全加载后运行 -->
   <script>
     let view;
 
@@ -122,7 +86,6 @@
           view.container = null;
           view.destroy();
         }
-
         const webmap = new WebMap({
           portalItem: { id: mapId }
         });
@@ -130,21 +93,20 @@
         view = new MapView({
           container: "map",
           map: webmap,
-          center: [103.8, 1.35], // 默认新加坡
+          center: [0, 20],
           zoom: 2
         });
       });
     }
 
-    // 默认加载第一个地图
-    window.onload = function () {
+    // 保证页面 DOM 加载完再执行图表创建
+    window.addEventListener("DOMContentLoaded", function () {
       loadWebMap("909ccff2f308451ca3d47aa968928a3b");
-      loadCharts();
-    };
 
-    // 示例图表数据（可以换成真实门店数量数据）
-    function loadCharts() {
-      new Chart(document.getElementById("barChart"), {
+      const barCtx = document.getElementById("barChart").getContext("2d");
+      const pieCtx = document.getElementById("pieChart").getContext("2d");
+
+      new Chart(barCtx, {
         type: "bar",
         data: {
           labels: ["Starbucks", "Luckin", "Tim Hortons", "Costa", "McCafe"],
@@ -155,7 +117,6 @@
           }]
         },
         options: {
-          responsive: true,
           plugins: { legend: { display: false } },
           scales: {
             x: { ticks: { color: "white" } },
@@ -164,7 +125,7 @@
         }
       });
 
-      new Chart(document.getElementById("pieChart"), {
+      new Chart(pieCtx, {
         type: "pie",
         data: {
           labels: ["Starbucks", "Luckin", "Tim Hortons", "Costa", "McCafe"],
@@ -177,11 +138,10 @@
           }]
         },
         options: {
-          responsive: true,
           plugins: { legend: { labels: { color: "white" } } }
         }
       });
-    }
+    });
   </script>
 </body>
 </html>
