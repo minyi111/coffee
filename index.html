@@ -77,11 +77,14 @@
     <h2>☕ Coffee Map</h2>
     <button onclick="loadWebMap('909ccff2f308451ca3d47aa968928a3b',[103.8, 1.35], 10)">Coffee Shop location in SG</button>
     <button onclick="loadWebMap('7a7a761019c744af8fe5a4315c3a1da2', [0, 20], 2)">Google Trends Map</button>
-    <div id="trend-controls">
+
+    <div id="trend-controls" style="margin-left: 12px; padding-left: 8px; border-left: 2px solid #ccc;">
+    <p style="margin: 4px 0; font-size: 14px; color: #666;">↳ Brand Trends:</p>
       <button onclick="toggleBrand('StarbucksTrends')">Starbucks</button>
       <button onclick="toggleBrand('TimsTrends')">Tim Hortons</button>
       <button onclick="toggleBrand('LuckinTrends')">Luckin Coffee</button>
     </div>
+
     <div class="legend">
       <strong>Legend:</strong>
       <div class="legend-item"><span class="legend-color" style="background:#00704A"></span>Starbucks</div>
@@ -106,6 +109,16 @@ function loadWebMap(mapId, center = [0, 20], zoom = 2) {
     view = new MapView({ container: "map", map: webmap, center, zoom });
     enablePopupToSidebar(view);
 
+    //图例
+    require(["esri/widgets/Legend"], (Legend) => {
+      const legend = new Legend({
+       view: view
+    });
+
+    // 加到左侧 panel
+    view.ui.add(legend, "manual"); // 不直接插入内置位置
+    document.getElementById("left-panel").appendChild(legend.container);
+    });
         
     // 🧭 添加比例尺和指北针
     require(["esri/widgets/ScaleBar", "esri/widgets/Compass"], (ScaleBar, Compass) => {
@@ -214,7 +227,7 @@ function showBrandTrends(brand) {
   const panel = document.getElementById("right-panel");
   panel.style.display = "block";
   panel.innerHTML = `
-    <div class="chart-title">🔥 Global Search Trends</div>
+    <div class="chart-title">Global Search Trends</div>
     <canvas id="pieChart" height="200"></canvas>
   `;
 
