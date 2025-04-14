@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>☕ Global Coffee Insight Map</title>
-  <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/dark/main.css" />
+  <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/light/main.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://js.arcgis.com/4.28/"></script>
   <style>
@@ -27,6 +27,7 @@
     }
     #right-panel {
       width: 360px;
+      display: none; /* 初始隐藏右侧面板 */
     }
     #map {
       flex: 1;
@@ -52,6 +53,22 @@
       margin-top: 10px;
       margin-bottom: 4px;
     }
+    .legend {
+      margin-top: 20px;
+      font-size: 14px;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      margin-right: 8px;
+      border-radius: 4px;
+      display: inline-block;
+    }
   </style>
 </head>
 <body>
@@ -61,19 +78,24 @@
     <button onclick="loadWebMap('909ccff2f308451ca3d47aa968928a3b',[103.8, 1.35], 13)">Coffee Shop location in SG</button>
     <button onclick="loadWebMap('7a7a761019c744af8fe5a4315c3a1da2', [0, 20], 2)">Google Trends Map</button>
     <div id="trend-controls">
-      <button onclick="showBrandTrends('StarbucksTrends')">Starbucks</button>
-      <button onclick="showBrandTrends('TimsTrends')">Tim Hortons</button>
-      <button onclick="showBrandTrends('LuckinTrends')">Luckin Coffee</button>
+      <button onclick="toggleBrand('StarbucksTrends')">Starbucks</button>
+      <button onclick="toggleBrand('TimsTrends')">Tim Hortons</button>
+      <button onclick="toggleBrand('LuckinTrends')">Luckin Coffee</button>
+    </div>
+    <div class="legend">
+      <strong>Legend:</strong>
+      <div class="legend-item"><span class="legend-color" style="background:#aab6ec"></span>Starbucks</div>
+      <div class="legend-item"><span class="legend-color" style="background:#fdd8a8"></span>Tim Hortons</div>
+      <div class="legend-item"><span class="legend-color" style="background:#c7e3cb"></span>Luckin Coffee</div>
     </div>
   </div>
   <div id="map"></div>
-  <div id="right-panel">
-    <div class="chart-title">🔥 Global Search Trends</div>
-    <canvas id="pieChart" height="200"></canvas>
-  </div>
+  <div id="right-panel"></div>
 </div>
 <script>
 let view;
+let activeLayerTitle = null;
+
 function loadWebMap(mapId, center = [0, 20], zoom = 2) {
   require(["esri/WebMap", "esri/views/MapView"], (WebMap, MapView) => {
     if (view) {
@@ -85,6 +107,7 @@ function loadWebMap(mapId, center = [0, 20], zoom = 2) {
     enablePopupToSidebar(view);
   });
 }
+
 function enablePopupToSidebar(view) {
   const brandLinks = {
     "Starbucks": "https://www.starbucks.com/menu?...",
@@ -96,7 +119,9 @@ function enablePopupToSidebar(view) {
     "Ya Kun Kaya Toast": "https://app.yakun.com/cherish-app",
     "Ralph‘s Coffee": "https://www.ralphlauren.com.sg/..."
   };
+
   view.popup.autoOpenEnabled = false;
+
   view.on("click", (event) => {
     view.hitTest(event).then((response) => {
       const result = response.results.find(res =>
@@ -117,11 +142,13 @@ function enablePopupToSidebar(view) {
           const brand = attr.Brand || attr.brand || "Unknown";
           const shopType = layer.title === "Chain_CoffeeShop" ? "Chain Coffee Shop" : "Independent Coffee Shop";
           const link = brandLinks[brand];
+
           let html = `<div style="font-size:15px; padding:10px; line-height:1.6;">
             <div style="font-size:18px; font-weight:bold; margin-bottom:10px;">☕ ${shopType}</div>
             <strong>Name:</strong> ${name}<br>
             <strong>Address:</strong> ${address}<br>
             <strong>Rating:</strong> ${rating} ⭐<br><br>`;
+
           if (link) {
             const isApp = link.includes("app") || link.includes("download");
             const label = isApp ? "Download App to Order" : "Order Online";
@@ -131,15 +158,30 @@ function enablePopupToSidebar(view) {
               </button>
             </a>`;
           }
-          html += `</div>
-            <div class="chart-title">🔥 Global Search Trends</div>
-            <canvas id="pieChart" height="200"></canvas>`;
-          document.getElementById("right-panel").innerHTML = html;
+
+          html += `</div>`;
+
+          const panel = document.getElementById("right-panel");
+          panel.innerHTML = html;
+          panel.style.display = "block";
         });
       }
     });
   });
 }
+
+function toggleBrand(layerTitle) {
+  if (!view) return;
+
+  view.map.layers.forEach(layer => {
+    if (["StarbucksTrends", "TimsTrends", "LuckinTrends"].includes(layer.title)) {
+      layer.visible = (layer.title === layerTitle);
+    }
+  });
+
+  showBrandTrends(layerTitle);
+}
+
 function showBrandTrends(brand) {
   const dataMap = {
     "StarbucksTrends": {
@@ -159,15 +201,14 @@ function showBrandTrends(brand) {
   const brandData = dataMap[brand];
   if (!brandData) return;
 
-  // ✅ 重新插入 canvas 元素，避免右侧面板被 popup 清空后找不到 canvas
   const panel = document.getElementById("right-panel");
+  panel.style.display = "block";
   panel.innerHTML = `
     <div class="chart-title">🔥 Global Search Trends</div>
     <canvas id="pieChart" height="200"></canvas>
   `;
 
   const ctx = document.getElementById("pieChart").getContext("2d");
-
   if (window.pieChart && typeof window.pieChart.destroy === "function") {
     window.pieChart.destroy();
   }
