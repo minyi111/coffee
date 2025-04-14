@@ -84,13 +84,6 @@
       <button onclick="toggleBrand('TimsTrends')">Tim Hortons</button>
       <button onclick="toggleBrand('LuckinTrends')">Luckin Coffee</button>
     </div>
-
-    <div class="legend">
-      <strong>Legend:</strong>
-      <div class="legend-item"><span class="legend-color" style="background:#00704A"></span>Starbucks</div>
-      <div class="legend-item"><span class="legend-color" style="background:#d50032"></span>Tim Hortons</div>
-      <div class="legend-item"><span class="legend-color" style="background:#1e4dd8"></span>Luckin Coffee</div>
-    </div>
   </div>
   <div id="map"></div>
   <div id="right-panel"></div>
@@ -166,11 +159,18 @@ function enablePopupToSidebar(view) {
           const shopType = layer.title === "Chain_CoffeeShop" ? "Chain Coffee Shop" : "Independent Coffee Shop";
           const link = brandLinks[brand];
 
-          let html = `<div style="font-size:15px; padding:10px; line-height:1.6;">
-            <div style="font-size:18px; font-weight:bold; margin-bottom:10px;">☕ ${shopType}</div>
-            <strong>Name:</strong> ${name}<br>
-            <strong>Address:</strong> ${address}<br>
-            <strong>Rating:</strong> ${rating} ⭐<br><br>`;
+          let html = `
+            <div style="font-size:16px; padding:14px; line-height:1.8;">
+            <div style="font-size:20px; font-weight:bold; color:#333; margin-bottom:8px;">${name}</div>
+            <div><strong style="color:#555;">📍 Address:</strong><br>${address}</div>
+            <div style="margin-top:8px;">
+            <strong style="color:#555;">⭐ Google Rating:</strong> 
+            <span style="display:inline-block; font-size:16px; background:#f4f4f4; padding:2px 8px; border-radius:6px; margin-left:6px;">
+            ${rating} / 5
+          </span>
+        </div>
+        `;
+
 
           if (link) {
             const isApp = link.includes("app") || link.includes("download");
