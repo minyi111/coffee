@@ -122,12 +122,17 @@
           const shopType = result.graphic.layer.title === "Chain_CoffeeShop" ? "Chain Coffee Shop" : "Independent Coffee Shop";
           const link = brandLinks[brand];
 
-          let html = `<div style="font-size:15px; padding:10px; line-height:1.6;">
-            <div style="font-size:18px; font-weight:bold; margin-bottom:10px;">☕ ${shopType}</div>
-            const name = attr.Name || attr.name || "(no name)";
-            const address = attr.Address || attr.address || "(no address)";
-            const rating = attr.Rating || attr.rating || "N/A";
+          const name = attr.Name || attr.name || "(no name)";
+          const address = attr.Address || attr.address || "(no address)";
+          const rating = attr.Rating || attr.rating || "N/A";
 
+      let html = `
+        <div style="font-size:15px; padding:10px; line-height:1.6;">
+          <div style="font-size:18px; font-weight:bold; margin-bottom:10px;">☕ ${shopType}</div>
+          <strong>Name:</strong> ${name}<br>
+          <strong>Address:</strong> ${address}<br>
+          <strong>Rating:</strong> ${rating} ⭐<br><br>
+        `;
 
           if (link) {
             const isApp = link.includes("app") || link.includes("download");
