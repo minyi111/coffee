@@ -6,54 +6,54 @@
   <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/dark/main.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://js.arcgis.com/4.28/"></script>
+  
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      font-family: "Segoe UI", sans-serif;
-      background-color: #1f1f1f;
-      color: white;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    font-family: "Segoe UI", sans-serif;
+    background-color: #ffffff; /* 改为白色 */
+    color: #000000; /* 改为黑色文字 */
     }
     .container {
-      display: flex;
-      height: 100%;
+    display: flex;
+    height: 100%;
     }
-    #left-panel {
-      width: 250px;
-      background: #2a2a2a;
-      padding: 16px;
-    }
-    #map {
-      flex: 1;
-      height: 100%;
-    }
-    #right-panel {
-      width: 360px;
-      background: #2a2a2a;
-      padding: 16px;
-      overflow-y: auto;
-    }
-    canvas {
-      margin-top: 16px;
-      background-color: #1f1f1f;
-    }
-    select, button {
-      width: 100%;
-      margin-bottom: 12px;
-      padding: 8px;
-      font-size: 14px;
-      border: none;
-      border-radius: 4px;
-      background: #444;
-      color: white;
-    }
-    .chart-title {
-      font-size: 16px;
-      color: #8a2be2;
-      margin-top: 10px;
-      margin-bottom: 4px;
-    }
+  #left-panel, #right-panel {
+    width: 250px;
+    background: #ffffff; /* 两边都设为白色 */
+    padding: 16px;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  }
+  #right-panel {
+    width: 360px;
+  }
+  #map {
+    flex: 1;
+    height: 100%;
+  }
+  canvas {
+    margin-top: 16px;
+    background-color: #ffffff;
+  }
+  select, button {
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: #f9f9f9;
+    color: #000000;
+  }
+  .chart-title {
+    font-size: 16px;
+    color: #222222;
+    margin-top: 10px;
+    margin-bottom: 4px;
+  }
+
   </style>
 </head>
 <body>
@@ -168,64 +168,57 @@ function enablePopupToSidebar(view) {
 
 
   // 🌐 Google Trends 全球热度分布 Pie Chart
-  function showBrandTrends(layerTitle) {
-    view.map.layers.forEach(layer => {
-      if (["StarbucksTrends", "TimsTrends", "LuckinTrends"].includes(layer.title)) {
-        layer.visible = (layer.title === layerTitle);
-      }
-    });
+  // ✅ 静态版 Pie Chart 展示函数（不依赖地图图层）
+function showBrandTrends(brand) {
+  const dataMap = {
+    "StarbucksTrends": {
+      labels: ["United States", "Canada", "Singapore", "Philippines", "Malaysia"],
+      data: [100, 85, 78, 52, 50]
+    },
+    "TimsTrends": {
+      labels: ["Canada", "United Arab Emirates", "United Kingdom", "Philippines", "Pakistan"],
+      data: [100, 6, 5, 3, 3]
+    },
+    "LuckinTrends": {
+      labels: ["Singapore", "China", "Malaysia", "Switzerland", "Germany"],
+      data: [100, 40, 12, 6, 4]
+    }
+  };
 
-    const targetLayer = view.map.layers.find(l => l.title === layerTitle);
-    if (!targetLayer) return;
+  const brandData = dataMap[brand];
+  if (!brandData) return;
 
-    const query = targetLayer.createQuery();
-    query.outFields = ["country", "trends"];
-    query.where = "1=1";
-    query.returnGeometry = false;
+  const ctx = document.getElementById("pieChart").getContext("2d");
 
-    targetLayer.queryFeatures(query).then((result) => {
-      const features = result.features;
-      const labels = [], data = [];
-      features.forEach((f) => {
-        const country = f.attributes.country;
-        const trend = f.attributes.trends;
-        if (trend > 0) {
-          labels.push(country);
-          data.push(trend);
-        }
-      });
-
-      const canvas = document.getElementById("pieChart");
-      if (!canvas) return;
-      const ctx = canvas.getContext("2d");
-
-      if (window.pieChart && typeof window.pieChart.destroy === "function") {
-        window.pieChart.destroy();
-      }
-
-      window.pieChart = new Chart(ctx, {
-        type: "pie",
-        data: {
-          labels: labels,
-          datasets: [{
-            data: data,
-            backgroundColor: labels.map((_, i) => `hsl(${i * 20 % 360}, 70%, 60%)`)
-          }]
-        },
-        options: {
-          plugins: {
-            legend: { labels: { color: "white" } },
-            title: {
-              display: true,
-              text: `${layerTitle.replace("Trends", "")} Global Search Share`,
-              color: "#8a2be2",
-              font: { size: 16 }
-            }
-          }
-        }
-      });
-    });
+  // 清除旧图表
+  if (window.pieChart && typeof window.pieChart.destroy === "function") {
+    window.pieChart.destroy();
   }
+
+  // 绘制新图表
+  window.pieChart = new Chart(ctx, {
+  type: "pie",
+  data: {
+    labels: brandData.labels,
+    datasets: [{
+      data: brandData.data,
+      backgroundColor: ["#aab6ec", "#fdd8a8", "#c7e3cb", "#ead6d7", "#d7d3d2"]
+    }]
+  },
+  options: {
+    plugins: {
+      legend: { labels: { color: "#000" } },
+      title: {
+        display: true,
+        text: brand.replace("Trends", "") + " Global Search Share",
+        color: "#000",
+        font: { size: 16 }
+      }
+    }
+  }
+});
+}
+
 
   // ✨ DOM 加载后进行初始化
   window.addEventListener("DOMContentLoaded", () => {
