@@ -99,52 +99,73 @@
   
 
   // ☕ 展示 popup 内容到右侧面板
-  function enablePopupToSidebar(view) {
-    const brandLinks = {
-      "Starbucks": "https://www.starbucks.com/menu?_branch_match_id=1439859153515999594&utm_source=Web&utm_campaign=Pickup&utm_medium=marketing&_branch_referrer=H4sIAAAAAAAAA8soKSkottLXLy5JLEoqTc4u1kssKNDLyczL1g93LCkoD88J8zOxrytKTUstKsrMS49PKsovL04tsnXOKMrPTQUA%2BN1wVz8AAAA%3D",
-      "Tiong Bahru Bakery": "https://www.tiongbahrubakery.com/takeaway-pre-order/",
-      "Foreword Coffee": "https://forewordcoffee.com/?srsltid=AfmBOorymOOr41y--XQIlHwbjoFZOS1jeKXChmkzDfPFUsIYfpurqXZA",
-      "Tim Hortons": "https://deliveroo.com.sg/menu/singapore/jurong-east-boon-lay-way/tim-hortons-jem?utm_source=google&utm_medium=cpc&utm_term=tim%20hortons%20delivery&utm_campaign=%2A%2A%5EAcquisition%5ESearch%5ERestaurant%5ESingapore%5EAll%20Cities%5ESGBJ%5EBroad%5EAPI%5EBukit%20Batok%20%26%20Jurong%20East%5E~1293~%5E%5EIndependents%5EEN%5ELifecycle%5E%C2%A322207624036&utm_loc=9062542&utm_device=c&utm_adposition=&utm_network=g&utm_targetid=kwd-319354228291&gclsrc=aw.ds&gad_source=1&gclid=CjwKCAjwwe2_BhBEEiwAM1I7sTGTTtzURCwIYCHPlCLL_YA4G38SYHIeKo-6W2OtYSNAz9fZ0kzK_BoCAlcQAvD_BwE",
-      "Luckin Coffee": "https://www.luckincoffee.com/app/download",
-      "Coffee Bean": "https://www.coffeebean.com/",
-      "Ya Kun Kaya Toast": "https://app.yakun.com/cherish-app",
-      "Ralph‘s Coffee": "https://www.ralphlauren.com.sg/content-features/brand-navigation-categories/ralphs-coffee/ralphs-coffee?srsltid=AfmBOoqXhN49BoAqBdwsQfUiRWYbQQmRRpCeweFwFbXICvN0SLIopQ8V"
-    };
-    
-    view.popup.autoOpenEnabled = false;
-    view.on("click", (event) => {
-      view.hitTest(event).then((response) => {
-        const result = response.results.find(res => res.graphic.layer.title === "Chain_CoffeeShop" || res.graphic.layer.title === "independent_coffee_by_region");
-        if (result) {
-          const attr = result.graphic.attributes;
-          console.log(attr);
-          const brand = attr.Brand;
-          const shopType = result.graphic.layer.title === "Chain_CoffeeShop" ? "Chain Coffee Shop" : "Independent Coffee Shop";
-          const link = brandLinks[brand];
+function enablePopupToSidebar(view) {
+  const brandLinks = {
+    "Starbucks": "https://www.starbucks.com/menu?_branch_match_id=1439859153515999594&utm_source=Web&utm_campaign=Pickup&utm_medium=marketing&_branch_referrer=H4sIAAAAAAAAA8soKSkottLXLy5JLEoqTc4u1kssKNDLyczL1g93LCkoD88J8zOxrytKTUstKsrMS49PKsovL04tsnXOKMrPTQUA%2BN1wVz8AAAA%3D",
+    "Tiong Bahru Bakery": "https://www.tiongbahrubakery.com/takeaway-pre-order/",
+    "Foreword Coffee": "https://forewordcoffee.com/?srsltid=AfmBOorymOOr41y--XQIlHwbjoFZOS1jeKXChmkzDfPFUsIYfpurqXZA",
+    "Tim Hortons": "https://deliveroo.com.sg/menu/singapore/jurong-east-boon-lay-way/tim-hortons-jem?utm_source=google&utm_medium=cpc&utm_term=tim%20hortons%20delivery&utm_campaign=%2A%2A%5EAcquisition%5ESearch%5ERestaurant%5ESingapore%5EAll%20Cities%5ESGBJ%5EBroad%5EAPI%5EBukit%20Batok%20%26%20Jurong%20East%5E~1293~%5E%5EIndependents%5EEN%5ELifecycle%5E%C2%A322207624036&utm_loc=9062542&utm_device=c&utm_adposition=&utm_network=g&utm_targetid=kwd-319354228291&gclsrc=aw.ds&gad_source=1&gclid=CjwKCAjwwe2_BhBEEiwAM1I7sTGTTtzURCwIYCHPlCLL_YA4G38SYHIeKo-6W2OtYSNAz9fZ0kzK_BoCAlcQAvD_BwE",
+    "Luckin Coffee": "https://www.luckincoffee.com/app/download",
+    "Coffee Bean": "https://www.coffeebean.com/",
+    "Ya Kun Kaya Toast": "https://app.yakun.com/cherish-app",
+    "Ralph‘s Coffee": "https://www.ralphlauren.com.sg/content-features/brand-navigation-categories/ralphs-coffee/ralphs-coffee?srsltid=AfmBOoqXhN49BoAqBdwsQfUiRWYbQQmRRpCeweFwFbXICvN0SLIopQ8V"
+  };
 
+  view.popup.autoOpenEnabled = false;
+
+  view.on("click", (event) => {
+    view.hitTest(event).then((response) => {
+      const result = response.results.find(res =>
+        res.graphic.layer.title === "Chain_CoffeeShop" ||
+        res.graphic.layer.title === "independent_coffee_by_region"
+      );
+
+      if (result) {
+        const layer = result.graphic.layer;
+        const objectId = result.graphic.attributes[layer.objectIdField];
+
+        const query = layer.createQuery();
+        query.objectIds = [objectId];
+        query.outFields = ["*"];
+
+        layer.queryFeatures(query).then((res) => {
+          const attr = res.features[0].attributes;
           const name = attr.Name || attr.name || "(no name)";
           const address = attr.Address || attr.address || "(no address)";
           const rating = attr.Rating || attr.rating || "N/A";
+          const brand = attr.Brand || attr.brand || "Unknown";
 
-      let html = `
-        <div style="font-size:15px; padding:10px; line-height:1.6;">
-          <div style="font-size:18px; font-weight:bold; margin-bottom:10px;">☕ ${shopType}</div>
-          <strong>Name:</strong> ${name}<br>
-          <strong>Address:</strong> ${address}<br>
-          <strong>Rating:</strong> ${rating} ⭐<br><br>
-        `;
+          const shopType = layer.title === "Chain_CoffeeShop" ? "Chain Coffee Shop" : "Independent Coffee Shop";
+          const link = brandLinks[brand];
+
+          let html = `
+            <div style="font-size:15px; padding:10px; line-height:1.6;">
+              <div style="font-size:18px; font-weight:bold; margin-bottom:10px;">☕ ${shopType}</div>
+              <strong>Name:</strong> ${name}<br>
+              <strong>Address:</strong> ${address}<br>
+              <strong>Rating:</strong> ${rating} ⭐<br><br>
+          `;
 
           if (link) {
             const isApp = link.includes("app") || link.includes("download");
             const label = isApp ? "Download App to Order" : "Order Online";
-            html += `<a href="${link}" target="_blank"><button style="background-color:#8a2be2;border:none;color:white;padding:8px 16px;border-radius:6px;font-size:14px;cursor:pointer;">${label}</button></a>`;
+            html += `
+              <a href="${link}" target="_blank">
+                <button style="background-color:#8a2be2;border:none;color:white;padding:8px 16px;border-radius:6px;font-size:14px;cursor:pointer;">
+                  ${label}
+                </button>
+              </a>
+            `;
           }
+
           html += `</div>`;
           document.getElementById("right-panel").innerHTML = html;
-        }
-      });
+        });
+      }
     });
-  }
+  });
+}
+
 
   // 🌐 Google Trends 全球热度分布 Pie Chart
   function showBrandTrends(layerTitle) {
