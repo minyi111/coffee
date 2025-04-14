@@ -223,10 +223,11 @@ function showBrandTrends(brand) {
   };
 
   const brandColors = {
-    "StarbucksTrends": "#00704A",
-    "TimsTrends": "#C8102E",
-    "LuckinTrends": "#1F2F98"
+      "StarbucksTrends": ["#aab6ec", "#fdd8a8", "#c7e3cb", "#ead6d7", "#d7d3d2"],
+      "TimsTrends": ["#aab6ec", "#fdd8a8", "#c7e3cb", "#ead6d7", "#d7d3d2"],
+      "LuckinTrends": ["#aab6ec", "#fdd8a8", "#c7e3cb", "#ead6d7", "#d7d3d2"]
   };
+
 
   const brandData = dataMap[brand];
   if (!brandData) return;
