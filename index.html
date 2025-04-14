@@ -274,7 +274,15 @@ function showBrandTrends(brand) {
     },
     options: {
       plugins: {
-        legend: { labels: { color: "#000" } },
+      legend: {
+        labels: {
+        color: "#000",
+        boxWidth: 12,
+        padding: 10
+        },
+      position: "right",     // ✅ 控制图例右侧显示
+      align: "start"         // ✅ 使图例左对齐
+      },
         title: {
           display: true,
           text: brand.replace("Trends", "") + " Global Search Share",
