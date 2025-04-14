@@ -256,7 +256,7 @@ function showBrandTrends(brand) {
       cursor: pointer;
       margin-bottom: 8px;">Hide</button>
     <div class="chart-title">Global Search Trends</div>
-    <canvas id="pieChart" height="200"></canvas>`;
+    <canvas id="pieChart" height="320"></canvas>`;
 
   const ctx = document.getElementById("pieChart").getContext("2d");
   if (window.pieChart && typeof window.pieChart.destroy === "function") {
@@ -280,8 +280,8 @@ function showBrandTrends(brand) {
         boxWidth: 12,
         padding: 10
         },
-      position: "right",     // ✅ 控制图例右侧显示
-      align: "start"         // ✅ 使图例左对齐
+      position: "bottom",     // ✅ 控制图例底部显示
+      align: "center"         // ✅ 居中
       },
         title: {
           display: true,
