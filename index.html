@@ -6,169 +6,140 @@
   <link rel="stylesheet" href="https://js.arcgis.com/4.28/esri/themes/dark/main.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://js.arcgis.com/4.28/"></script>
-  
   <style>
     html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    font-family: "Segoe UI", sans-serif;
-    background-color: #ffffff; /* 改为白色 */
-    color: #000000; /* 改为黑色文字 */
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: "Segoe UI", sans-serif;
+      background-color: #ffffff;
+      color: #000000;
     }
     .container {
-    display: flex;
-    height: 100%;
+      display: flex;
+      height: 100%;
     }
-  #left-panel, #right-panel {
-    width: 250px;
-    background: #ffffff; /* 两边都设为白色 */
-    padding: 16px;
-    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-  }
-  #right-panel {
-    width: 360px;
-  }
-  #map {
-    flex: 1;
-    height: 100%;
-  }
-  canvas {
-    margin-top: 16px;
-    background-color: #ffffff;
-  }
-  select, button {
-    width: 100%;
-    margin-bottom: 12px;
-    padding: 8px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    background: #f9f9f9;
-    color: #000000;
-  }
-  .chart-title {
-    font-size: 16px;
-    color: #222222;
-    margin-top: 10px;
-    margin-bottom: 4px;
-  }
-
+    #left-panel, #right-panel {
+      width: 250px;
+      background: #ffffff;
+      padding: 16px;
+      box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    }
+    #right-panel {
+      width: 360px;
+    }
+    #map {
+      flex: 1;
+      height: 100%;
+    }
+    canvas {
+      margin-top: 16px;
+      background-color: #ffffff;
+    }
+    select, button {
+      width: 100%;
+      margin-bottom: 12px;
+      padding: 8px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #f9f9f9;
+      color: #000000;
+    }
+    .chart-title {
+      font-size: 16px;
+      color: #222222;
+      margin-top: 10px;
+      margin-bottom: 4px;
+    }
   </style>
 </head>
 <body>
 <div class="container">
-  <!-- 📅 左侧控制面板 -->
   <div id="left-panel">
     <h2>☕ Coffee Map</h2>
-    <button onclick="loadWebMap('909ccff2f308451ca3d47aa968928a3b',[103.8, 1.35], 10)">Coffee Shop location in SG</button>
+    <button onclick="loadWebMap('909ccff2f308451ca3d47aa968928a3b',[103.8, 1.35], 13)">Coffee Shop location in SG</button>
     <button onclick="loadWebMap('7a7a761019c744af8fe5a4315c3a1da2', [0, 20], 2)">Google Trends Map</button>
-    <!-- 📈 品牌热度图层切换 -->
     <div id="trend-controls">
       <button onclick="showBrandTrends('StarbucksTrends')">Starbucks</button>
       <button onclick="showBrandTrends('TimsTrends')">Tim Hortons</button>
       <button onclick="showBrandTrends('LuckinTrends')">Luckin Coffee</button>
     </div>
   </div>
-
-  <!-- 🌍 地图区域 -->
   <div id="map"></div>
-
-  <!-- 🔢 右侧图表面板 -->
   <div id="right-panel">
     <div class="chart-title">🔥 Global Search Trends</div>
     <canvas id="pieChart" height="200"></canvas>
   </div>
 </div>
-
 <script>
-  let view;
-
-  // ☕ 加载 Web Map
-  function loadWebMap(mapId, center = [0, 20], zoom = 2) {
-    require(["esri/WebMap", "esri/views/MapView"], (WebMap, MapView) => {
-      if (view) {
-        view.container = null;
-        view.destroy();
-      }
-      const webmap = new WebMap({ portalItem: { id: mapId } });
-      view = new MapView({ container: "map", map: webmap, center, zoom });
-      enablePopupToSidebar(view);
-    });
-  }
-  
-
-  // ☕ 展示 popup 内容到右侧面板
+let view;
+function loadWebMap(mapId, center = [0, 20], zoom = 2) {
+  require(["esri/WebMap", "esri/views/MapView"], (WebMap, MapView) => {
+    if (view) {
+      view.container = null;
+      view.destroy();
+    }
+    const webmap = new WebMap({ portalItem: { id: mapId } });
+    view = new MapView({ container: "map", map: webmap, center, zoom });
+    enablePopupToSidebar(view);
+  });
+}
 function enablePopupToSidebar(view) {
   const brandLinks = {
-    "Starbucks": "https://www.starbucks.com/menu?_branch_match_id=1439859153515999594&utm_source=Web&utm_campaign=Pickup&utm_medium=marketing&_branch_referrer=H4sIAAAAAAAAA8soKSkottLXLy5JLEoqTc4u1kssKNDLyczL1g93LCkoD88J8zOxrytKTUstKsrMS49PKsovL04tsnXOKMrPTQUA%2BN1wVz8AAAA%3D",
+    "Starbucks": "https://www.starbucks.com/menu?...",
     "Tiong Bahru Bakery": "https://www.tiongbahrubakery.com/takeaway-pre-order/",
-    "Foreword Coffee": "https://forewordcoffee.com/?srsltid=AfmBOorymOOr41y--XQIlHwbjoFZOS1jeKXChmkzDfPFUsIYfpurqXZA",
-    "Tim Hortons": "https://deliveroo.com.sg/menu/singapore/jurong-east-boon-lay-way/tim-hortons-jem?utm_source=google&utm_medium=cpc&utm_term=tim%20hortons%20delivery&utm_campaign=%2A%2A%5EAcquisition%5ESearch%5ERestaurant%5ESingapore%5EAll%20Cities%5ESGBJ%5EBroad%5EAPI%5EBukit%20Batok%20%26%20Jurong%20East%5E~1293~%5E%5EIndependents%5EEN%5ELifecycle%5E%C2%A322207624036&utm_loc=9062542&utm_device=c&utm_adposition=&utm_network=g&utm_targetid=kwd-319354228291&gclsrc=aw.ds&gad_source=1&gclid=CjwKCAjwwe2_BhBEEiwAM1I7sTGTTtzURCwIYCHPlCLL_YA4G38SYHIeKo-6W2OtYSNAz9fZ0kzK_BoCAlcQAvD_BwE",
+    "Foreword Coffee": "https://forewordcoffee.com/...",
+    "Tim Hortons": "https://deliveroo.com.sg/menu/...",
     "Luckin Coffee": "https://www.luckincoffee.com/app/download",
     "Coffee Bean": "https://www.coffeebean.com/",
     "Ya Kun Kaya Toast": "https://app.yakun.com/cherish-app",
-    "Ralph‘s Coffee": "https://www.ralphlauren.com.sg/content-features/brand-navigation-categories/ralphs-coffee/ralphs-coffee?srsltid=AfmBOoqXhN49BoAqBdwsQfUiRWYbQQmRRpCeweFwFbXICvN0SLIopQ8V"
+    "Ralph‘s Coffee": "https://www.ralphlauren.com.sg/..."
   };
-
   view.popup.autoOpenEnabled = false;
-
   view.on("click", (event) => {
     view.hitTest(event).then((response) => {
       const result = response.results.find(res =>
         res.graphic.layer.title === "Chain_CoffeeShop" ||
         res.graphic.layer.title === "independent_coffee_by_region"
       );
-
       if (result) {
         const layer = result.graphic.layer;
         const objectId = result.graphic.attributes[layer.objectIdField];
-
         const query = layer.createQuery();
         query.objectIds = [objectId];
         query.outFields = ["*"];
-
         layer.queryFeatures(query).then((res) => {
           const attr = res.features[0].attributes;
           const name = attr.Name || attr.name || "(no name)";
           const address = attr.Address || attr.address || "(no address)";
           const rating = attr.Rating || attr.rating || "N/A";
           const brand = attr.Brand || attr.brand || "Unknown";
-
           const shopType = layer.title === "Chain_CoffeeShop" ? "Chain Coffee Shop" : "Independent Coffee Shop";
           const link = brandLinks[brand];
-
-          let html = `
-            <div style="font-size:15px; padding:10px; line-height:1.6;">
-              <div style="font-size:18px; font-weight:bold; margin-bottom:10px;">☕ ${shopType}</div>
-              <strong>Name:</strong> ${name}<br>
-              <strong>Address:</strong> ${address}<br>
-              <strong>Rating:</strong> ${rating} ⭐<br><br>
-          `;
-
+          let html = `<div style="font-size:15px; padding:10px; line-height:1.6;">
+            <div style="font-size:18px; font-weight:bold; margin-bottom:10px;">☕ ${shopType}</div>
+            <strong>Name:</strong> ${name}<br>
+            <strong>Address:</strong> ${address}<br>
+            <strong>Rating:</strong> ${rating} ⭐<br><br>`;
           if (link) {
             const isApp = link.includes("app") || link.includes("download");
             const label = isApp ? "Download App to Order" : "Order Online";
-            html += `
-              <a href="${link}" target="_blank">
-                <button style="background-color:#8a2be2;border:none;color:white;padding:8px 16px;border-radius:6px;font-size:14px;cursor:pointer;">
-                  ${label}
-                </button>
-              </a>
-            `;
+            html += `<a href="${link}" target="_blank">
+              <button style="background-color:#8a2be2;border:none;color:white;padding:8px 16px;border-radius:6px;font-size:14px;cursor:pointer;">
+                ${label}
+              </button>
+            </a>`;
           }
-
-          html += `</div>`;
+          html += `</div>
+            <div class="chart-title">🔥 Global Search Trends</div>
+            <canvas id="pieChart" height="200"></canvas>`;
           document.getElementById("right-panel").innerHTML = html;
         });
       }
     });
   });
 }
-
-
-  // 🌐 Google Trends 全球热度分布 Pie Chart
-  // ✅ 静态版 Pie Chart 展示函数（不依赖地图图层）
 function showBrandTrends(brand) {
   const dataMap = {
     "StarbucksTrends": {
@@ -184,46 +155,39 @@ function showBrandTrends(brand) {
       data: [100, 40, 12, 6, 4]
     }
   };
-
   const brandData = dataMap[brand];
   if (!brandData) return;
-
-  const ctx = document.getElementById("pieChart").getContext("2d");
-
-  // 清除旧图表
+  const pieCanvas = document.getElementById("pieChart");
+  if (!pieCanvas) return;
+  const ctx = pieCanvas.getContext("2d");
   if (window.pieChart && typeof window.pieChart.destroy === "function") {
     window.pieChart.destroy();
   }
-
-  // 绘制新图表
   window.pieChart = new Chart(ctx, {
-  type: "pie",
-  data: {
-    labels: brandData.labels,
-    datasets: [{
-      data: brandData.data,
-      backgroundColor: ["#aab6ec", "#fdd8a8", "#c7e3cb", "#ead6d7", "#d7d3d2"]
-    }]
-  },
-  options: {
-    plugins: {
-      legend: { labels: { color: "#000" } },
-      title: {
-        display: true,
-        text: brand.replace("Trends", "") + " Global Search Share",
-        color: "#000",
-        font: { size: 16 }
+    type: "pie",
+    data: {
+      labels: brandData.labels,
+      datasets: [{
+        data: brandData.data,
+        backgroundColor: ["#aab6ec", "#fdd8a8", "#c7e3cb", "#ead6d7", "#d7d3d2"]
+      }]
+    },
+    options: {
+      plugins: {
+        legend: { labels: { color: "#000" } },
+        title: {
+          display: true,
+          text: brand.replace("Trends", "") + " Global Search Share",
+          color: "#000",
+          font: { size: 16 }
+        }
       }
     }
-  }
-});
-}
-
-
-  // ✨ DOM 加载后进行初始化
-  window.addEventListener("DOMContentLoaded", () => {
-    loadWebMap("909ccff2f308451ca3d47aa968928a3b", [103.8, 1.35], 13);
   });
+}
+window.addEventListener("DOMContentLoaded", () => {
+  loadWebMap("909ccff2f308451ca3d47aa968928a3b", [103.8, 1.35], 13);
+});
 </script>
 </body>
 </html>
