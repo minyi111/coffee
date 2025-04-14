@@ -20,14 +20,16 @@
       height: 100%;
     }
     #left-panel, #right-panel {
-      width: 250px;
       background: #ffffff;
       padding: 16px;
       box-shadow: 2px 0 5px rgba(0,0,0,0.1);
     }
+    #left-panel {
+      width: 250px;
+    }
     #right-panel {
       width: 360px;
-      display: none; /* 初始隐藏右侧面板 */
+      display: none;
     }
     #map {
       flex: 1;
@@ -72,14 +74,15 @@
   </style>
 </head>
 <body>
+
 <div class="container">
   <div id="left-panel">
     <h2>☕ Coffee Map</h2>
-    <button onclick="loadWebMap('909ccff2f308451ca3d47aa968928a3b',[103.8, 1.35], 10)">Coffee Shop location in SG</button>
+    <button onclick="loadWebMap('909ccff2f308451ca3d47aa968928a3b',[103.8, 1.3521], 11)">Coffee Shop location in SG</button>
     <button onclick="loadWebMap('7a7a761019c744af8fe5a4315c3a1da2', [0, 20], 2)">Google Trends Map</button>
 
     <div id="trend-controls" style="margin-left: 12px; padding-left: 8px; border-left: 2px solid #ccc;">
-    <p style="margin: 4px 0; font-size: 14px; color: #666;">↳ Brand Trends:</p>
+      <p style="margin: 4px 0; font-size: 14px; color: #666;">↳ Brand Trends:</p>
       <button onclick="toggleBrand('StarbucksTrends')">Starbucks</button>
       <button onclick="toggleBrand('TimsTrends')">Tim Hortons</button>
       <button onclick="toggleBrand('LuckinTrends')">Luckin Coffee</button>
@@ -102,25 +105,18 @@ function loadWebMap(mapId, center = [0, 20], zoom = 2) {
     view = new MapView({ container: "map", map: webmap, center, zoom });
     enablePopupToSidebar(view);
 
-    //图例
     require(["esri/widgets/Legend"], (Legend) => {
-      const legend = new Legend({
-       view: view
+      const legend = new Legend({ view: view });
+      view.ui.add(legend, "manual");
+      document.getElementById("left-panel").appendChild(legend.container);
     });
 
-    // 加到左侧 panel
-    view.ui.add(legend, "manual"); // 不直接插入内置位置
-    document.getElementById("left-panel").appendChild(legend.container);
-    });
-        
-    // 🧭 添加比例尺和指北针
     require(["esri/widgets/ScaleBar", "esri/widgets/Compass"], (ScaleBar, Compass) => {
-    const scaleBar = new ScaleBar({ view: view, unit: "metric" });
-    view.ui.add(scaleBar, { position: "bottom-left" });
-
-    const compass = new Compass({ view: view });
-    view.ui.add(compass, "top-left");
-      });
+      const scaleBar = new ScaleBar({ view: view, unit: "metric" });
+      view.ui.add(scaleBar, { position: "bottom-left" });
+      const compass = new Compass({ view: view });
+      view.ui.add(compass, "top-left");
+    });
   });
 }
 
@@ -156,7 +152,6 @@ function enablePopupToSidebar(view) {
           const address = attr.Address || attr.address || "(no address)";
           const rating = attr.Rating || attr.rating || "N/A";
           const brand = attr.Brand || attr.brand || "Unknown";
-          const shopType = layer.title === "Chain_CoffeeShop" ? "Chain Coffee Shop" : "Independent Coffee Shop";
           const link = brandLinks[brand];
 
           let html = `
@@ -166,11 +161,8 @@ function enablePopupToSidebar(view) {
             <div style="margin-top:8px;">
             <strong style="color:#555;">⭐ Google Rating:</strong> 
             <span style="display:inline-block; font-size:16px; background:#f4f4f4; padding:2px 8px; border-radius:6px; margin-left:6px;">
-            ${rating} / 5
-          </span>
-        </div>
-        `;
-
+            ${rating} / 5</span>
+        </div>`;
 
           if (link) {
             const isApp = link.includes("app") || link.includes("download");
@@ -185,7 +177,19 @@ function enablePopupToSidebar(view) {
           html += `</div>`;
 
           const panel = document.getElementById("right-panel");
-          panel.innerHTML = html;
+          panel.innerHTML = `
+            <button onclick="hideRightPanel()" style="
+              background-color: #ccc;
+              border: none;
+              color: #000;
+              padding: 6px 12px;
+              border-radius: 6px;
+              font-size: 13px;
+              float: right;
+              cursor: pointer;
+              margin-bottom: 8px;">Hide</button>
+            ${html}`;
+
           panel.style.display = "block";
         });
       }
@@ -195,13 +199,11 @@ function enablePopupToSidebar(view) {
 
 function toggleBrand(layerTitle) {
   if (!view) return;
-
   view.map.layers.forEach(layer => {
     if (["StarbucksTrends", "TimsTrends", "LuckinTrends"].includes(layer.title)) {
       layer.visible = (layer.title === layerTitle);
     }
   });
-
   showBrandTrends(layerTitle);
 }
 
@@ -221,6 +223,12 @@ function showBrandTrends(brand) {
     }
   };
 
+  const brandColors = {
+    "StarbucksTrends": "#00704A",
+    "TimsTrends": "#C8102E",
+    "LuckinTrends": "#1F2F98"
+  };
+
   const brandData = dataMap[brand];
   if (!brandData) return;
 
@@ -228,8 +236,7 @@ function showBrandTrends(brand) {
   panel.style.display = "block";
   panel.innerHTML = `
     <div class="chart-title">Global Search Trends</div>
-    <canvas id="pieChart" height="200"></canvas>
-  `;
+    <canvas id="pieChart" height="200"></canvas>`;
 
   const ctx = document.getElementById("pieChart").getContext("2d");
   if (window.pieChart && typeof window.pieChart.destroy === "function") {
@@ -242,7 +249,7 @@ function showBrandTrends(brand) {
       labels: brandData.labels,
       datasets: [{
         data: brandData.data,
-        backgroundColor: ["#aab6ec", "#fdd8a8", "#c7e3cb", "#ead6d7", "#d7d3d2"]
+        backgroundColor: Array(brandData.labels.length).fill(brandColors[brand])
       }]
     },
     options: {
@@ -259,8 +266,13 @@ function showBrandTrends(brand) {
   });
 }
 
+function hideRightPanel() {
+  const panel = document.getElementById("right-panel");
+  panel.style.display = "none";
+}
+
 window.addEventListener("DOMContentLoaded", () => {
-  loadWebMap("909ccff2f308451ca3d47aa968928a3b", [103.8, 1.35], 13);
+  loadWebMap("909ccff2f308451ca3d47aa968928a3b", [103.8, 1.3521], 11);
 });
 </script>
 </body>
