@@ -97,7 +97,122 @@
   <!-- 右侧弹出面板 -->
   <div id="right-panel"></div>
 </div>
+<!-- 📈 Real-Time Brand Stock Prices Card -->
+<section class="card-section">
+  <h2 class="card-title">Real-Time Brand Stock Prices</h2>
+  <p class="card-subtitle">
+    Live stock prices of Starbucks, Tim Hortons, and Luckin Coffee, powered by TradingView.
+  </p>
 
+  <div class="tradingview-widget-container">
+    <div id="brand-stock-widget"></div>
+    <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+    {
+      "symbols": [
+        { "proName": "NASDAQ:SBUX", "title": "Starbucks" },
+        { "proName": "NYSE:QSR", "title": "Tim Hortons (RBI)" },
+        { "proName": "OTC:LKNCY", "title": "Luckin Coffee" }
+      ],
+      "colorTheme": "light",
+      "isTransparent": false,
+      "displayMode": "adaptive",
+      "locale": "en"
+    }
+    </script>
+  </div>
+</section>
+<!--介绍卡片-->
+<section class="card-section">
+  <h2 class="card-title">Brand Introduction</h2>
+  <p class="card-subtitle">An overview of the three key coffee brands featured in this study.</p>
+
+  <!-- Starbucks -->
+  <div style="display: flex; align-items: center; margin-bottom: 24px;">
+    <img src="https://breeze-assets.breeze.com.tw/shop/08aec9af0de939ab20cdb6d75504e9b9997bab64.jpg?1676709289"
+         alt="Starbucks Logo" style="width: 100px; height: 100px; object-fit: contain; margin-right: 20px;" />
+    <div style="flex: 1;">
+      <div style="font-weight: bold; font-size: 16px;">Starbucks</div>
+      <p style="font-size: 14px; color: #333; margin: 6px 0;">
+        Founded in 1971 in Seattle, Starbucks is the world’s largest coffeehouse chain with over 35,000 stores globally, known for its premium coffee and third-place culture.
+      </p>
+      <a href="https://www.starbucks.com/" target="_blank">
+        <button style="padding: 6px 12px; background-color: #aab6ec; border: none; border-radius: 6px; cursor: pointer;">
+          Visit Website
+        </button>
+      </a>
+    </div>
+  </div>
+
+  <!-- Tim Hortons -->
+  <div style="display: flex; align-items: center; margin-bottom: 24px;">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS6q43mJirM2CVrRMutrFD99Z1fHS1suBH61g&s"
+         alt="Tim Hortons Logo" style="width: 100px; height: 100px; object-fit: contain; margin-right: 20px;" />
+    <div style="flex: 1;">
+      <div style="font-weight: bold; font-size: 16px;">Tim Hortons</div>
+      <p style="font-size: 14px; color: #333; margin: 6px 0;">
+        Originating from Canada in 1964, Tim Hortons is popular for its affordable coffee and donuts. It is now part of Restaurant Brands International (RBI) with a growing international presence.
+      </p>
+      <a href="https://www.timhortons.ca/" target="_blank">
+        <button style="padding: 6px 12px; background-color: #aab6ec; border: none; border-radius: 6px; cursor: pointer;">
+          Visit Website
+        </button>
+      </a>
+    </div>
+  </div>
+
+  <!-- Luckin Coffee -->
+  <div style="display: flex; align-items: center;">
+    <img src="data:image/jpeg;base64,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"
+         alt="Luckin Coffee Logo" style="width: 100px; height: 100px; object-fit: contain; margin-right: 20px;" />
+    <div style="flex: 1;">
+      <div style="font-weight: bold; font-size: 16px;">Luckin Coffee</div>
+      <p style="font-size: 14px; color: #333; margin: 6px 0;">
+        Launched in 2017 in China, Luckin is a digitally driven coffee brand focused on affordable pricing, rapid expansion, and app-based ordering. It has quickly become a top competitor in Asia.
+      </p>
+      <a href="https://www.luckincoffee.com/" target="_blank">
+        <button style="padding: 6px 12px; background-color: #aab6ec; border: none; border-radius: 6px; cursor: pointer;">
+          Visit Website
+        </button>
+      </a>
+    </div>
+  </div>
+</section>
+ 
+  <section class="card-section">
+  <h2 class="card-title">Brand Positioning Comparison</h2>
+  <p class="card-subtitle">A quick comparison of brand styles and consumer targeting strategies.</p>
+
+  <table style="width:100%; border-collapse: collapse; font-size: 14px;">
+    <thead>
+      <tr style="background:#f6f6f6;">
+        <th style="padding: 8px; text-align: left;">Brand</th>
+        <th style="padding: 8px; text-align: left;">Positioning</th>
+        <th style="padding: 8px; text-align: left;">Target Consumers</th>
+        <th style="padding: 8px; text-align: left;">Notable Strategy</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding: 8px;">Starbucks</td>
+        <td style="padding: 8px;">Premium & Urban Lifestyle</td>
+        <td style="padding: 8px;">Office workers, travelers, students</td>
+        <td style="padding: 8px;">Third-place spaces, loyalty programs</td>
+      </tr>
+      <tr style="background:#fafafa;">
+        <td style="padding: 8px;">Tim Hortons</td>
+        <td style="padding: 8px;">Daily & Affordable</td>
+        <td style="padding: 8px;">Families, commuters, casual coffee drinkers</td>
+        <td style="padding: 8px;">Meal combos, local adaptation</td>
+      </tr>
+      <tr>
+        <td style="padding: 8px;">Luckin Coffee</td>
+        <td style="padding: 8px;">Fast & Digital-first</td>
+        <td style="padding: 8px;">Young professionals, tech-savvy users</td>
+        <td style="padding: 8px;">App-based ordering, heavy discounting</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
 <script>
 let view;
 
