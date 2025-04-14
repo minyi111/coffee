@@ -72,6 +72,25 @@
       border-radius: 4px;
       display: inline-block;
     }
+    .card-section {
+  margin: 40px auto;
+  padding: 24px 32px;
+  max-width: 960px;
+  background: #ffffff;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  border-radius: 12px;
+}
+.card-title {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.card-subtitle {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 18px;
+}
+
   </style>
 </head>
 <body>
@@ -97,6 +116,7 @@
   <!-- 右侧弹出面板 -->
   <div id="right-panel"></div>
 </div>
+  
 <!-- 📈 Real-Time Brand Stock Prices Card -->
 <section class="card-section">
   <h2 class="card-title">Real-Time Brand Stock Prices</h2>
@@ -177,7 +197,9 @@
     </div>
   </div>
 </section>
- 
+
+
+  
   <section class="card-section">
   <h2 class="card-title">Brand Positioning Comparison</h2>
   <p class="card-subtitle">A quick comparison of brand styles and consumer targeting strategies.</p>
@@ -213,6 +235,10 @@
     </tbody>
   </table>
 </section>
+
+
+
+
 <script>
 let view;
 
