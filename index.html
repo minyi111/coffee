@@ -38,6 +38,7 @@
     canvas {
       margin-top: 16px;
       background-color: #ffffff;
+      border-radius: 8px;
     }
     select, button {
       width: 100%;
@@ -76,10 +77,13 @@
 <body>
 
 <div class="container">
+  <!-- 左侧控制面板 -->
   <div id="left-panel">
+    <h2>☕ Coffee Map</h2>
     <button onclick="loadWebMap('909ccff2f308451ca3d47aa968928a3b',[103.8, 1.3521], 11)">Coffee Shop location in SG</button>
     <button onclick="loadWebMap('7a7a761019c744af8fe5a4315c3a1da2', [0, 20], 2)">Google Trends Map</button>
 
+    <!-- 品牌趋势子控制区域 -->
     <div id="trend-controls" style="margin-left: 12px; padding-left: 8px; border-left: 2px solid #ccc;">
       <p style="margin: 4px 0; font-size: 14px; color: #666;">↳ Brand Trends:</p>
       <button onclick="toggleBrand('StarbucksTrends')">Starbucks</button>
@@ -87,13 +91,18 @@
       <button onclick="toggleBrand('LuckinTrends')">Luckin Coffee</button>
     </div>
   </div>
+
+  <!-- 地图容器 -->
   <div id="map"></div>
+
+  <!-- 右侧弹出面板 -->
   <div id="right-panel"></div>
 </div>
+
 <script>
 let view;
-let activeLayerTitle = null;
 
+// 初始化加载地图
 function loadWebMap(mapId, center = [0, 20], zoom = 2) {
   require(["esri/WebMap", "esri/views/MapView"], (WebMap, MapView) => {
     if (view) {
@@ -104,12 +113,14 @@ function loadWebMap(mapId, center = [0, 20], zoom = 2) {
     view = new MapView({ container: "map", map: webmap, center, zoom });
     enablePopupToSidebar(view);
 
+    // 添加图例
     require(["esri/widgets/Legend"], (Legend) => {
       const legend = new Legend({ view: view });
       view.ui.add(legend, "manual");
       document.getElementById("left-panel").appendChild(legend.container);
     });
 
+    // 添加比例尺和指北针
     require(["esri/widgets/ScaleBar", "esri/widgets/Compass"], (ScaleBar, Compass) => {
       const scaleBar = new ScaleBar({ view: view, unit: "metric" });
       view.ui.add(scaleBar, { position: "bottom-left" });
@@ -119,6 +130,7 @@ function loadWebMap(mapId, center = [0, 20], zoom = 2) {
   });
 }
 
+// 点击咖啡店时右侧显示详细信息
 function enablePopupToSidebar(view) {
   const brandLinks = {
     "Starbucks": "https://www.starbucks.com/menu?...",
@@ -153,21 +165,25 @@ function enablePopupToSidebar(view) {
           const brand = attr.Brand || attr.brand || "Unknown";
           const link = brandLinks[brand];
 
+          // HTML结构
           let html = `
             <div style="font-size:16px; padding:14px; line-height:1.8;">
-            <div style="font-size:20px; font-weight:bold; color:#333; margin-bottom:8px;">${name}</div>
-            <div><strong style="color:#555;">📍 Address:</strong><br>${address}</div>
-            <div style="margin-top:8px;">
-            <strong style="color:#555;">⭐ Google Rating:</strong> 
-            <span style="display:inline-block; font-size:16px; background:#f4f4f4; padding:2px 8px; border-radius:6px; margin-left:6px;">
-            ${rating} / 5</span>
-        </div>`;
+              <div style="font-size:20px; font-weight:bold; color:#333; margin-bottom:8px;">${name}</div>
+              <div><strong style="color:#555;">📍 Address:</strong><br>${address}</div>
+              <div style="margin-top:8px;">
+                <strong style="color:#555;">⭐ Google Rating:</strong>
+                <span style="display:inline-block; font-size:16px; background:#f4f4f4; padding:2px 8px; border-radius:6px; margin-left:6px;">
+                  ${rating} / 5
+                </span>
+              </div>
+          `;
 
+          // 加入跳转按钮
           if (link) {
             const isApp = link.includes("app") || link.includes("download");
             const label = isApp ? "Download App to Order" : "Order Online";
             html += `<a href="${link}" target="_blank">
-              <button style="background-color:#8a2be2;border:none;color:white;padding:8px 16px;border-radius:6px;font-size:14px;cursor:pointer;">
+              <button style="background-color:#aab6ec;border:none;color:black;padding:8px 16px;border-radius:6px;font-size:14px;cursor:pointer;margin-top:12px;">
                 ${label}
               </button>
             </a>`;
@@ -178,9 +194,9 @@ function enablePopupToSidebar(view) {
           const panel = document.getElementById("right-panel");
           panel.innerHTML = `
             <button onclick="hideRightPanel()" style="
-              background-color: #ccc;
+              background-color: #eeeeee;
               border: none;
-              color: #000;
+              color: #333;
               padding: 6px 12px;
               border-radius: 6px;
               font-size: 13px;
@@ -196,6 +212,7 @@ function enablePopupToSidebar(view) {
   });
 }
 
+// 品牌趋势按钮控制地图图层和右侧扇形图
 function toggleBrand(layerTitle) {
   if (!view) return;
   view.map.layers.forEach(layer => {
@@ -206,6 +223,7 @@ function toggleBrand(layerTitle) {
   showBrandTrends(layerTitle);
 }
 
+// 展示静态品牌搜索热度饼图
 function showBrandTrends(brand) {
   const dataMap = {
     "StarbucksTrends": {
@@ -222,19 +240,22 @@ function showBrandTrends(brand) {
     }
   };
 
-  const brandColors = {
-      "StarbucksTrends": ["#aab6ec", "#fdd8a8", "#c7e3cb", "#ead6d7", "#d7d3d2"],
-      "TimsTrends": ["#aab6ec", "#fdd8a8", "#c7e3cb", "#ead6d7", "#d7d3d2"],
-      "LuckinTrends": ["#aab6ec", "#fdd8a8", "#c7e3cb", "#ead6d7", "#d7d3d2"]
-  };
-
-
   const brandData = dataMap[brand];
   if (!brandData) return;
 
   const panel = document.getElementById("right-panel");
   panel.style.display = "block";
   panel.innerHTML = `
+    <button onclick="hideRightPanel()" style="
+      background-color: #eeeeee;
+      border: none;
+      color: #333;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      float: right;
+      cursor: pointer;
+      margin-bottom: 8px;">Hide</button>
     <div class="chart-title">Global Search Trends</div>
     <canvas id="pieChart" height="200"></canvas>`;
 
@@ -249,7 +270,7 @@ function showBrandTrends(brand) {
       labels: brandData.labels,
       datasets: [{
         data: brandData.data,
-        backgroundColor: Array(brandData.labels.length).fill(brandColors[brand])
+        backgroundColor: ["#aab6ec", "#fdd8a8", "#c7e3cb", "#ead6d7", "#d7d3d2"]
       }]
     },
     options: {
@@ -266,11 +287,13 @@ function showBrandTrends(brand) {
   });
 }
 
+// 隐藏右侧面板
 function hideRightPanel() {
   const panel = document.getElementById("right-panel");
   panel.style.display = "none";
 }
 
+// 页面加载时默认展示新加坡地图
 window.addEventListener("DOMContentLoaded", () => {
   loadWebMap("909ccff2f308451ca3d47aa968928a3b", [103.8, 1.3521], 11);
 });
