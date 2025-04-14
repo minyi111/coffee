@@ -155,14 +155,23 @@ function showBrandTrends(brand) {
       data: [100, 40, 12, 6, 4]
     }
   };
+
   const brandData = dataMap[brand];
   if (!brandData) return;
-  const pieCanvas = document.getElementById("pieChart");
-  if (!pieCanvas) return;
-  const ctx = pieCanvas.getContext("2d");
+
+  // ✅ 重新插入 canvas 元素，避免右侧面板被 popup 清空后找不到 canvas
+  const panel = document.getElementById("right-panel");
+  panel.innerHTML = `
+    <div class="chart-title">🔥 Global Search Trends</div>
+    <canvas id="pieChart" height="200"></canvas>
+  `;
+
+  const ctx = document.getElementById("pieChart").getContext("2d");
+
   if (window.pieChart && typeof window.pieChart.destroy === "function") {
     window.pieChart.destroy();
   }
+
   window.pieChart = new Chart(ctx, {
     type: "pie",
     data: {
@@ -185,6 +194,7 @@ function showBrandTrends(brand) {
     }
   });
 }
+
 window.addEventListener("DOMContentLoaded", () => {
   loadWebMap("909ccff2f308451ca3d47aa968928a3b", [103.8, 1.35], 13);
 });
